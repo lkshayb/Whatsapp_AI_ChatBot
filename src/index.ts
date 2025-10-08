@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import axios from "axios";
 import "dotenv/config"; 
 import { GoogleGenAI } from "@google/genai";
-import { appendMessage, getHistory} from "./chatstore.ts";
+import { appendMessage, getHistory} from './chatstore.js';
 const google_api = process.env.GEMINI;
 const ai = new GoogleGenAI({ apiKey: `${google_api}`});
 
@@ -78,7 +78,7 @@ async function sendWhatsappText(to: string, body: string) {
     console.log("status", resp.status, "data", resp.data);
 }
 
-async function getResponse(text:string,history:Array<Object>):Promise<string | undefined>{
+async function getResponse(text:string,history:string | never[]):Promise<string | undefined>{
     const SYSTEM_PROMPT = `
         You are Nyay AI, an AI-powered legal awareness assistant trained on Indian laws.
         Guidelines:

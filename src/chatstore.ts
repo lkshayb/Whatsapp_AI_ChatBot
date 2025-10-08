@@ -1,4 +1,4 @@
-type Msg = { role: "user" | "model"; text: string; time: number };
+type Msg = { role: "user" | "model"; text: string | undefined; time: number };
 const store = new Map<string, Msg[]>();
 
 export function appendMessage(userId: string, msg: Msg) {
@@ -11,7 +11,7 @@ export function appendMessage(userId: string, msg: Msg) {
 }
 
 export function getHistory(userId: string){
-    const contents: { role: string; parts: { text: string }[] }[] = [];
+    const contents: { role: string; parts: { text: string | undefined }[] }[] = [];
     const editmap= store.get(userId) ?? [];
     for (const value of editmap) { 
         contents.push({

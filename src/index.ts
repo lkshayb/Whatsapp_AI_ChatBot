@@ -4,6 +4,7 @@ import axios from "axios";
 import "dotenv/config"; 
 import { GoogleGenAI } from "@google/genai";
 import { appendMessage, getHistory} from './chatstore.js';
+
 const google_api = process.env.GEMINI;
 const ai = new GoogleGenAI({ apiKey: `${google_api}`});
 
@@ -13,18 +14,22 @@ app.use(express.json());
 //webhook connection endpoint
 app.get('/webhook',(req:Request,res:Response) => {
     console.log("REACHED AUTH WEBHOOK ENDPOINT")
-    console.log(
-        req.query["hub.mode"],
-        req.query["hub.verify_token"],
-        req.query["hub.challenge"]
-    );
-    console.log("subscribe",process.env.WHATSAPP_VERIFY_TOKEN)
-    if(req.query["hub.mode"] === "subscribe" && req.query["hub.verify_token"] === process.env.WHATSAPP_VERIFY_TOKEN) return res.status(200).send(req.query["hub.challenge"]);
+    const token_server:string | undefined = process.env.WHATSAPP_VERIFY_TOKEN;
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+
+    console.log(mode,token,challenge);
+    console.log("Token With Server :",token_server)
+
+    if(mode === "subscribe" && token === token_server) {
+        return res.status(200).send(challenge);
+    }
     return res.sendStatus(403);
 })
 
 //Testing endpoint
-app.get('/test',(req,res) => res.send("SERVER IS RUNNING, PLEASE ACCESS THROUGH WHATSAPP API"))
+app.get('/test',(req:Request,res:Response) => res.send(true));
 
 //main webhook post endpoint
 app.post('/webhook',async (req:Request,res:Response) => {
@@ -35,12 +40,16 @@ app.post('/webhook',async (req:Request,res:Response) => {
         const changes = entry?.changes?.[0];
         const value = changes?.value;
         const messages= value?.messages as any[];
+
         console.log(messages)
-        if (Array.isArray(messages) && messages.length > 0) {
+        
+        if (messages.length > 0) {
             const msg = messages[0];
             const from = msg.from;                      
             const text = msg.text?.body || "";           
+
             appendMessage(entry.id, { role: "user", text: messages[0].text.body, time: Date.now() });
+
             const history = getHistory(entry.id) || [];
             const replyText = await getResponse(text,history);
             
@@ -49,19 +58,15 @@ app.post('/webhook',async (req:Request,res:Response) => {
             if(replyText){
                 await sendWhatsappText(from, replyText);
             }
-            else console.log("error")
         }
-        res.sendStatus(200);
     }catch(e){
         console.error("Webhook error:", e);
-        res.sendStatus(200); 
     }
 })
 
 //function to forward message to whatsapp
 async function sendWhatsappText(to: string, body: string) {
     console.log("Using token present?:", !!process.env.WHATSAPP_TOKEN);
-    console.log("crnt time : ",Date.now())
     const resp = await axios.post(
         `https://graph.facebook.com/v22.0/${process.env.PHONE_NUMBER_ID}/messages`,
         {
@@ -74,8 +79,7 @@ async function sendWhatsappText(to: string, body: string) {
             headers: {Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,"Content-Type": "application/json"}
         }
     );
-    console.log("after time : ",Date.now())
-    console.log("status", resp.status, "data", resp.data);
+    console.log(resp.status)
 }
 
 async function getResponse(text:string,history:string | never[]):Promise<string | undefined>{
@@ -101,8 +105,6 @@ async function getResponse(text:string,history:string | never[]):Promise<string 
                 - Always keep responses in the context of Indian law only.
                 - Never provide non-Indian legal advice.
             Use WhatsApp formatting conventions: *bold*, _italic_, ~strikethrough~, monospace
-
-
     `
 
     const KANNON_CONTEXT = `

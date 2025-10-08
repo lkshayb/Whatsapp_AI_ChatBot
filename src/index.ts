@@ -4,7 +4,7 @@ import axios from "axios";
 import "dotenv/config"; 
 import { GoogleGenAI } from "@google/genai";
 import { appendMessage, getHistory} from "./chatstore.ts";
-const google_api = process.env.GOOGLE_API_KEY;
+const google_api = process.env.GEMINI;
 const ai = new GoogleGenAI({ apiKey: `${google_api}`});
 
 const app = express();
@@ -156,7 +156,7 @@ async function getResponse(text:string,history:Array<Object>):Promise<string | u
                 },
                 {
                     role:"user",
-                    parts : [{text: history + text}]
+                    parts : [{text: text}]
                 },
             ];
             const response = await ai.models.generateContent({

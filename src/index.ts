@@ -5,7 +5,8 @@ import "dotenv/config";
 import { GoogleGenAI } from "@google/genai";
 import { appendMessage, getHistory} from './chatstore.js';
 
-const google_api = process.env.GEMINI;
+const google_api = process.env.GEMINI_API_KEY;
+console.log(google_api);
 const ai = new GoogleGenAI({ apiKey: `${google_api}`});
 
 const app = express();
@@ -13,6 +14,7 @@ app.use(express.json());
 
 //webhook connection endpoint
 app.get('/webhook',(req:Request,res:Response) => {
+    res.sendStatus(200);
     console.log("REACHED AUTH WEBHOOK ENDPOINT")
     const token_server:string | undefined = process.env.WHATSAPP_VERIFY_TOKEN;
     const mode = req.query["hub.mode"];
@@ -31,18 +33,27 @@ app.get('/webhook',(req:Request,res:Response) => {
 //Testing endpoint
 app.get('/test',(req:Request,res:Response) => res.send(true));
 
+
+const processedMessages = new Set<string>();
 //main webhook post endpoint
 app.post('/webhook',async (req:Request,res:Response) => {
+    res.sendStatus(200);
     console.log("***REACHED WEBHOOK ENDPOINT FOR MESSAGING***")
-    res.status(200);
+    
     try{
         const entry = req.body?.entry?.[0];
         const changes = entry?.changes?.[0];
         const value = changes?.value;
         const messages= value?.messages as any[];
-
+        if(!messages) return
         console.log(messages)
-        
+        const messageId = messages[0]?.id;
+        if (processedMessages.has(messageId)) {
+            console.log("Duplicate message ignored:", messageId);
+            return;
+        }
+        //wamid.HBgMOTE4Mjg3MDMyMzcyFQIAEhgWM0VCMDk2QUI2MDBBNUJGRENGQjQ3NAA=
+        processedMessages.add(messageId);
         if (messages.length > 0) {
             const msg = messages[0];
             const from = msg.from;                      

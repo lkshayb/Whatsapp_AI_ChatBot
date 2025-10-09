@@ -51,7 +51,7 @@ app.post('/webhook',async (req:Request,res:Response) => {
             return;
         }
         processedMessages.add(messageId);
-        sendWhatsappText(messages[0].from,"Typing")
+        sendWhatsappText(messages[0].from,"Typing...")
         if (messages.length > 0) {
             const msg = messages[0];
             const from = msg.from;                      

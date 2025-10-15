@@ -1,14 +1,18 @@
-type Msg = { role: "user" | "model"; text: string | undefined; time: number };
+type Msg = { 
+    role: "user" | "model"; 
+    text: string | undefined; 
+    time: number 
+};
+
 const store = new Map<string, Msg[]>();
 
-export function appendMessage(userId: string, msg: Msg) {
-    const last =  Array.from(store)[store.size - 1]    
+function appendMessage(userId: string, msg: Msg) {    
     const arr = store.get(userId) ?? [];
     arr.push(msg);
     store.set(userId, arr);
 }
 
-export function getHistory(userId: string){
+function getHistory(userId: string){
     const contents: { role: string; parts: { text: string | undefined }[] }[] = [];
     const editmap= store.get(userId) ?? [];
     for (const value of editmap) { 
@@ -20,3 +24,5 @@ export function getHistory(userId: string){
 
     return JSON.stringify(contents, null, 2)
 }
+
+export {appendMessage,getHistory}

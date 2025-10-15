@@ -40,12 +40,14 @@ async function getResponse(text:string,history:string | never[]):Promise<string 
 
     // law query
     const rsp_tailored = encodeURIComponent(rsp)
+
     const fetch_query = await axios.post(`https://api.indiankanoon.org/search/?formInput=${rsp_tailored}`,
         {},
         {
             headers: {Authorization: `Token ${process.env.INDIAN_KANOON_API_KEY}`}
         }
     )
+    console.log("Gemini req started :",Date.now())
     const processedResponse = await ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: [
@@ -53,6 +55,7 @@ async function getResponse(text:string,history:string | never[]):Promise<string 
             { role: "user", parts: [{ text: JSON.stringify(fetch_query.data, null, 2) }] },
         ],
     });
+    console.log("Gemini req ended :",Date.now())
     return processedResponse.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
 }
 

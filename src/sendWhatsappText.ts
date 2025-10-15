@@ -2,8 +2,6 @@ import axios from "axios";
 import "dotenv/config"; 
 
 async function sendTypingStatus(to: string) {
-    console.log(to)
-    console.log("Using token present?:", !!process.env.WHATSAPP_TOKEN);
     try{
         await axios.post(
             `https://graph.facebook.com/v24.0/${process.env.PHONE_NUMBER_ID}/messages`,
@@ -25,13 +23,17 @@ async function sendTypingStatus(to: string) {
     }
 }
 
-async function sendWhatsappText(to: string, body: string) {
+async function sendWhatsappText(to: string,id:string, body: string) {
     console.log("Using token present?:", !!process.env.WHATSAPP_TOKEN);
     const resp = await axios.post(
         `https://graph.facebook.com/v22.0/${process.env.PHONE_NUMBER_ID}/messages`,
         {
             messaging_product: "whatsapp",
+            recipient_type: "individual",
             to,
+            context: {
+                message_id: id
+            },
             type: "text",
             text: { body }
         },

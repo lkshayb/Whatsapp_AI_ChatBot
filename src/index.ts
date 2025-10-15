@@ -55,7 +55,7 @@ app.post('/webhook',async (req:Request,res:Response) => {
             
             appendMessage(entry.id, { role: "model", text: replyText, time: Date.now() });
             
-            if(replyText) await sendWhatsappText(from, replyText);
+            if(replyText) await sendWhatsappText(from,msg.id, replyText);
         }
     }catch(e){
         console.error("Webhook error:", e);

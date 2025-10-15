@@ -2,13 +2,13 @@ import express from "express";
 import type { Request, Response } from "express";
 import "dotenv/config"; 
 import { appendMessage, getHistory} from './chatstore.js';
-import { sendWhatsappText } from "./sendWhatsappText.js";
+import { sendWhatsappText,sendTypingStatus } from "./sendWhatsappText.js";
 import { getResponse } from "./response_fetch.js";
 const app = express();
 app.use(express.json());
 
 //webhook connection endpoint
-app.get('/webhook',(req:Request,res:Response) => {
+app.get('/webhook',async (req:Request,res:Response) => {
     const token_server:string | undefined = process.env.WHATSAPP_VERIFY_TOKEN;
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
@@ -41,8 +41,8 @@ app.post('/webhook',async (req:Request,res:Response) => {
             return;
         }
         processedMessages.add(messageId);
-        sendWhatsappText(messages[0].from,"Typing...")
-        
+        sendTypingStatus(messages[0].id)
+
         if (messages.length > 0) {
             const msg = messages[0];
             const from = msg.from;                      

@@ -1,4 +1,29 @@
 import axios from "axios";
+import "dotenv/config"; 
+
+async function sendTypingStatus(to: string) {
+    console.log(to)
+    console.log("Using token present?:", !!process.env.WHATSAPP_TOKEN);
+    try{
+        await axios.post(
+            `https://graph.facebook.com/v24.0/${process.env.PHONE_NUMBER_ID}/messages`,
+            {
+                messaging_product: "whatsapp",
+                status: "read",
+                message_id: to,
+                typing_indicator: {
+                    type: "text"
+                }
+            },
+            {
+                headers: {Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,"Content-Type": "application/json"}
+            }
+        );
+    }
+    catch(e){
+        console.log(e)
+    }
+}
 
 async function sendWhatsappText(to: string, body: string) {
     console.log("Using token present?:", !!process.env.WHATSAPP_TOKEN);
@@ -17,4 +42,4 @@ async function sendWhatsappText(to: string, body: string) {
     console.log(resp.status)
 }
 
-export {sendWhatsappText}
+export {sendWhatsappText,sendTypingStatus}

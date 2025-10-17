@@ -28,7 +28,9 @@ app.post('/webhook',async (req:Request,res:Response) => {
     res.sendStatus(200);
     console.log("***REACHED WEBHOOK ENDPOINT FOR MESSAGING***")
     
+    
     try{
+        const current_time = Date.now();
         const entry = req.body?.entry?.[0];
         const changes = entry?.changes?.[0];
         const value = changes?.value;
@@ -57,6 +59,9 @@ app.post('/webhook',async (req:Request,res:Response) => {
             
             if(replyText) await sendWhatsappText(from,msg.id, replyText);
         }
+
+        const last_time = Date.now();
+        console.log("Query Processed in ",(last_time-current_time)/1000," seconds")
     }catch(e){
         console.error("Webhook error:", e);
     }
